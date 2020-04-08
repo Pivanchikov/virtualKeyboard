@@ -1,0 +1,770 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+  <head>
+    <meta charset="utf-8">
+    <title></title>
+  </head>
+  <body>
+    <script type="text/javascript">
+      class Layout {
+        constructor(keys) {
+          this.keys = keys;
+        }
+      }
+
+      const showPageElements = () => {
+        document.body.innerHTML += '<h4>Deevahn keyboard (Windows). </br> LShift + LAlt to change layout.</h4>';
+        document.body.innerHTML += '<textarea id="text" class="text" rows="10" cols="77" autofocus></textarea>';
+      };
+
+      const showKeyboard = (keyboard) => {
+        let keyboardDiv = document.getElementById('keyboard');
+
+        if (null !== keyboardDiv) {
+          keyboardDiv.innerHTML = '';
+        } else {
+          document.body.innerHTML += '<div id="keyboard"></div>';
+          keyboardDiv              = document.getElementById('keyboard');
+        }
+
+        for (row of keyboard.keys) {
+          for (key of row) {
+            let handler = 'defaultHandler(this);';
+
+            if (key.hasOwnProperty('handler')) {
+              handler = (null === key.handler)
+                ? ''
+                : `${key.handler}(this);`;
+            }
+
+            let _class = 'key';
+
+            if ('Space' === key.label) {
+              _class += ' space';
+            }
+
+            keyboardDiv.innerHTML += `<button id="${key.code}" class="${_class}" onclick="${handler}">${key.label}</button>`;
+          }
+        }
+      };
+
+      const switchLayout = () => {
+        if ('en' === currentLayout) {
+          showKeyboard(keyboards.ru);
+
+          localStorage.setItem('layout', 'ru');
+          currentLayout = 'ru';
+          switched      = true;
+
+          return;
+        }
+
+        showKeyboard(keyboards.en);
+
+        localStorage.setItem('layout', 'en');
+        currentLayout = 'en';
+        switched      = true;
+      };
+
+      const keyDownHandler = (event) => {
+        const key = document.getElementById(event.code);
+
+        if (null === key) {
+          return;
+        }
+
+        if ('ShiftLeft' === event.code) {
+          lShiftPressed = true;
+        }
+
+        if ('AltLeft' === event.code) {
+          lAltPressed = true;
+        }
+
+        if (lShiftPressed && lAltPressed && !switched) {
+          switchLayout();
+        }
+
+        if (!key.classList.contains('pressed')) {
+          key.classList.add('pressed');
+        }
+      };
+
+      const keyUpHandler = (event) => {
+        const key = document.getElementById(event.code);
+
+        if (null === key) {
+          return;
+        }
+
+        if ('ShiftLeft' === event.code) {
+          lShiftPressed = false;
+          switched      = false;
+        }
+
+        if ('AltLeft' === event.code) {
+          lAltPressed = false;
+          switched    = false;
+        }
+
+        if (key.classList.contains('pressed')) {
+          key.classList.remove('pressed');
+        }
+      };
+
+      const defaultHandler = (key) => {
+        document.getElementById('text').value += key.textContent;
+      };
+
+      const tabHandler = () => {
+        document.getElementById('text').value += '\t';
+      };
+
+      const enterHandler = () => {
+        document.getElementById('text').value += '\n';
+      };
+
+      const spaceHandler = () => {
+        document.getElementById('text').value += ' ';
+      };
+
+      const backspaceHandler = () => {
+        const textArea = document.getElementById('text');
+
+        let start = textArea.selectionStart;
+        let end   = textArea.selectionEnd;
+
+        if (start === end) {
+          if (0 === start) {
+            start = textArea.value.length;
+            end   = textArea.value.length;
+          }
+
+          textArea.value = textArea.value.slice(0, start - 1) + textArea.value.slice(start);
+        } else {
+          textArea.value = textArea.value.slice(0, start) + textArea.value.slice(end);
+        }
+      };
+
+      const deleteHandler = () => {
+        const textArea = document.getElementById('text');
+        const start    = textArea.selectionStart;
+        const end      = textArea.selectionEnd;
+
+        if (start === end) {
+          textArea.value = textArea.value.slice(0, start) + textArea.value.slice(start + 1);
+        } else {
+          textArea.value = textArea.value.slice(0, start) + textArea.value.slice(end);
+        }
+      };
+
+      const keyboards = {
+        ru: new Layout([
+          [
+            {
+              label: 'ё',
+              code:  'Backquote'
+            },
+            {
+              label: '1',
+              code:  'Digit1'
+            },
+            {
+              label: '2',
+              code:  'Digit2'
+            },
+            {
+              label: '3',
+              code:  'Digit3'
+            },
+            {
+              label: '4',
+              code:  'Digit4'
+            },
+            {
+              label: '5',
+              code:  'Digit5'
+            },
+            {
+              label: '6',
+              code:  'Digit6'
+            },
+            {
+              label: '7',
+              code:  'Digit7'
+            },
+            {
+              label: '8',
+              code:  'Digit8'
+            },
+            {
+              label: '9',
+              code:  'Digit9'
+            },
+            {
+              label: '0',
+              code:  'Digit0'
+            },
+            {
+              label: '-',
+              code:  'Minus'
+            },
+            {
+              label: '=',
+              code:  'Equal'
+            },
+            {
+              label:   'Backspace',
+              code:    'Backspace',
+              handler: 'backspaceHandler'
+            }
+          ],
+          [
+            {
+              label:   'Tab',
+              code:    'Tab',
+              handler: 'tabHandler'
+            },
+            {
+              label: 'й',
+              code:  'KeyQ'
+            },
+            {
+              label: 'ц',
+              code:  'KeyW'
+            },
+            {
+              label: 'у',
+              code:  'KeyE'
+            },
+            {
+              label: 'к',
+              code:  'KeyR'
+            },
+            {
+              label: 'е',
+              code:  'KeyT'
+            },
+            {
+              label: 'н',
+              code:  'KeyY'
+            },
+            {
+              label: 'г',
+              code:  'KeyU'
+            },
+            {
+              label: 'ш',
+              code:  'KeyI'
+            },
+            {
+              label: 'щ',
+              code:  'KeyO'
+            },
+            {
+              label: 'з',
+              code:  'KeyP'
+            },
+            {
+              label: '[',
+              code:  'BracketLeft'
+            },
+            {
+              label: ']',
+              code:  'BracketRight'
+            },
+            {
+              label: '\\',
+              code:  'Backslash'
+            },
+            {
+              label:   'Delete',
+              code:    'Delete',
+              handler: 'deleteHandler'
+            }
+          ],
+          [
+            {
+              label:   'Caps Lock',
+              code:    'CapsLock',
+              handler: null
+            },
+            {
+              label: 'ф',
+              code:  'KeyA'
+            },
+            {
+              label: 'ы',
+              code:  'KeyS'
+            },
+            {
+              label: 'в',
+              code:  'KeyD'
+            },
+            {
+              label: 'а',
+              code:  'KeyF'
+            },
+            {
+              label: 'п',
+              code:  'KeyG'
+            },
+            {
+              label: 'р',
+              code:  'KeyH'
+            },
+            {
+              label: 'о',
+              code:  'KeyJ'
+            },
+            {
+              label: 'л',
+              code:  'KeyK'
+            },
+            {
+              label: 'д',
+              code:  'KeyL'
+            },
+            {
+              label: 'ж',
+              code:  'Semicolon'
+            },
+            {
+              label: 'э',
+              code:  'Quote'
+            },
+            {
+              label:   'Enter',
+              code:    'Enter',
+              handler: 'enterHandler'
+            }
+          ],
+          [
+            {
+              label:   'Shift',
+              code:    'ShiftLeft',
+              handler: null
+            },
+            {
+              label: 'я',
+              code:  'KeyZ'
+            },
+            {
+              label: 'ч',
+              code:  'KeyX'
+            },
+            {
+              label: 'с',
+              code:  'KeyC'
+            },
+            {
+              label: 'м',
+              code:  'KeyV'
+            },
+            {
+              label: 'и',
+              code:  'KeyB'
+            },
+            {
+              label: 'т',
+              code:  'KeyN'
+            },
+            {
+              label: 'ь',
+              code:  'KeyM'
+            },
+            {
+              label: 'б',
+              code:  'Comma'
+            },
+            {
+              label: 'ю',
+              code:  'Period'
+            },
+            {
+              label: '.',
+              code:  'Slash'
+            },
+            {
+              label: '↑',
+              code:  'ArrowUp'
+            },
+            {
+              label:   'Shift',
+              code:    'ShiftRight',
+              handler: null
+            },
+          ],
+          [
+            {
+              label:   'Ctrl',
+              code:    'ControlLeft',
+              handler: null
+            },
+            {
+              label:   'Win',
+              code:    'MetaLeft',
+              handler: null
+            },
+            {
+              label:   'Alt',
+              code:    'AltLeft',
+              handler: null
+            },
+            {
+              label:   'Space',
+              code:    'Space',
+              handler: 'spaceHandler'
+            },
+            {
+              label:   'Alt',
+              code:    'AltRight',
+              handler: null
+            },
+            {
+              label:   'Ctrl',
+              code:    'ControlRight',
+              handler: null
+            },
+            {
+              label:   '←',
+              code:    'ArrowLeft'
+            },
+            {
+              label:   '↓',
+              code:    'ArrowDown'
+            },
+            {
+              label:   '→',
+              code:    'ArrowRight'
+            }
+          ]
+        ]),
+        en: new Layout([
+          [
+            {
+              label: '`',
+              code:  'Backquote'
+            },
+            {
+              label: '1',
+              code:  'Digit1'
+            },
+            {
+              label: '2',
+              code:  'Digit2'
+            },
+            {
+              label: '3',
+              code:  'Digit3'
+            },
+            {
+              label: '4',
+              code:  'Digit4'
+            },
+            {
+              label: '5',
+              code:  'Digit5'
+            },
+            {
+              label: '6',
+              code:  'Digit6'
+            },
+            {
+              label: '7',
+              code:  'Digit7'
+            },
+            {
+              label: '8',
+              code:  'Digit8'
+            },
+            {
+              label: '9',
+              code:  'Digit9'
+            },
+            {
+              label: '0',
+              code:  'Digit0'
+            },
+            {
+              label: '-',
+              code:  'Minus'
+            },
+            {
+              label: '=',
+              code:  'Equal'
+            },
+            {
+              label:   'Backspace',
+              code:    'Backspace',
+              handler: 'backspaceHandler'
+            }
+          ],
+          [
+            {
+              label:   'Tab',
+              code:    'Tab',
+              handler: 'tabHandler'
+            },
+            {
+              label: 'q',
+              code:  'KeyQ'
+            },
+            {
+              label: 'w',
+              code:  'KeyW'
+            },
+            {
+              label: 'e',
+              code:  'KeyE'
+            },
+            {
+              label: 'r',
+              code:  'KeyR'
+            },
+            {
+              label: 't',
+              code:  'KeyT'
+            },
+            {
+              label: 'y',
+              code:  'KeyY'
+            },
+            {
+              label: 'u',
+              code:  'KeyU'
+            },
+            {
+              label: 'i',
+              code:  'KeyI'
+            },
+            {
+              label: 'o',
+              code:  'KeyO'
+            },
+            {
+              label: 'p',
+              code:  'KeyP'
+            },
+            {
+              label: '[',
+              code:  'BracketLeft'
+            },
+            {
+              label: ']',
+              code:  'BracketRight'
+            },
+            {
+              label: '\\',
+              code:  'Backslash'
+            },
+            {
+              label:   'Delete',
+              code:    'Delete',
+              handler: 'deleteHandler'
+            }
+          ],
+          [
+            {
+              label:   'Caps Lock',
+              code:    'CapsLock',
+              handler: null
+            },
+            {
+              label: 'a',
+              code:  'KeyA'
+            },
+            {
+              label: 's',
+              code:  'KeyS'
+            },
+            {
+              label: 'd',
+              code:  'KeyD'
+            },
+            {
+              label: 'f',
+              code:  'KeyF'
+            },
+            {
+              label: 'g',
+              code:  'KeyG'
+            },
+            {
+              label: 'h',
+              code:  'KeyH'
+            },
+            {
+              label: 'j',
+              code:  'KeyJ'
+            },
+            {
+              label: 'k',
+              code:  'KeyK'
+            },
+            {
+              label: 'l',
+              code:  'KeyL'
+            },
+            {
+              label: ';',
+              code:  'Semicolon'
+            },
+            {
+              label: '\'',
+              code:  'Quote'
+            },
+            {
+              label:   'Enter',
+              code:    'Enter',
+              handler: 'enterHandler'
+            }
+          ],
+          [
+            {
+              label:   'Shift',
+              code:    'ShiftLeft',
+              handler: null
+            },
+            {
+              label: 'z',
+              code:  'KeyZ'
+            },
+            {
+              label: 'x',
+              code:  'KeyX'
+            },
+            {
+              label: 'c',
+              code:  'KeyC'
+            },
+            {
+              label: 'v',
+              code:  'KeyV'
+            },
+            {
+              label: 'b',
+              code:  'KeyB'
+            },
+            {
+              label: 'n',
+              code:  'KeyN'
+            },
+            {
+              label: 'm',
+              code:  'KeyM'
+            },
+            {
+              label: '<',
+              code:  'Comma'
+            },
+            {
+              label: '>',
+              code:  'Period'
+            },
+            {
+              label: '/',
+              code:  'Slash'
+            },
+            {
+              label:   '↑',
+              code:    'ArrowUp'
+            },
+            {
+              label:   'Shift',
+              code:    'ShiftRight',
+              handler: null
+            },
+          ],
+          [
+            {
+              label:   'Ctrl',
+              code:    'ControlLeft',
+              handler: null
+            },
+            {
+              label:   'Win',
+              code:    'MetaLeft',
+              handler: null
+            },
+            {
+              label:   'Alt',
+              code:    'AltLeft',
+              handler: null
+            },
+            {
+              label:   'Space',
+              code:    'Space',
+              handler: 'spaceHandler'
+            },
+            {
+              label:   'Alt',
+              code:    'AltRight',
+              handler: null
+            },
+            {
+              label:   'Ctrl',
+              code:    'ControlRight',
+              handler: null
+            },
+            {
+              label:   '←',
+              code:    'ArrowLeft'
+            },
+            {
+              label:   '↓',
+              code:    'ArrowDown'
+            },
+            {
+              label:   '→',
+              code:    'ArrowRight'
+            }
+          ]
+        ])
+      };
+
+      let currentLayout = localStorage.getItem('layout') || 'en';
+      let switched      = false;
+      let lShiftPressed = false;
+      let lAltPressed   = false;
+
+      showPageElements();
+      showKeyboard(keyboards[currentLayout]);
+
+      document.addEventListener('keydown', keyDownHandler);
+      document.addEventListener('keyup', keyUpHandler);
+    </script>
+
+    <style>
+      textarea.text {
+        display:       block;
+        margin-bottom: 10px;
+      }
+
+      div#keyboard {
+        display:   flex;
+        width:     600px;
+        flex-wrap: wrap;
+      }
+
+      button.key {
+        min-width:     35px;
+        height:        35px;
+        margin-right:  2px;
+        margin-bottom: 2px;
+        padding:       5px 10px;
+        outline:       none;
+      }
+
+      button.key.space {
+        min-width: 250px;
+      }
+
+      button.key:active,
+      button.key.pressed {
+        background-color: #808080;
+        border-style:     inset;
+      }
+    </style>
+  </body>
+</html>
